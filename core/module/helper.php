@@ -73,17 +73,17 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 			$lang->load($module->module, dirname($path), null, false, false) ||
 			$lang->load($module->module, JPATH_BASE, $lang->getDefault(), false, false) ||
 			$lang->load($module->module, dirname($path), $lang->getDefault(), false, false);
-
-			$content = '';
-			ob_start();
-
 			$paths = array(JPATH_BASE . '/modules');
 			$paths = array_merge(self::addIncludePath(), $paths);
 
-			include JPath::find($paths, $module->module . '/' . $module->module . '.php');
-
-			$module->content = ob_get_contents() . $content;
-			ob_end_clean();
+			if ($filePath = JPath::find($paths, $module->module . '/' . $module->module . '.php'))
+			{
+				$content = '';
+				ob_start();
+				include $filePath;
+				$module->content = ob_get_contents() . $content;
+				ob_end_clean();
+			}
 		}
 
 		// Load the module chrome functions
