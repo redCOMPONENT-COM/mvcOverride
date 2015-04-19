@@ -48,7 +48,16 @@ class PlgSystemMVCOverride extends JPlugin
 		JPlugin::loadLanguage('plg_system_mvcoverride');
 
 		parent::__construct($subject, $config);
+	}
 
+	/**
+	 * onAfterRoute function.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function onAfterRoute()
+	{
 		JPluginHelper::importPlugin('redcore');
 
 		$app = JFactory::getApplication();
@@ -75,16 +84,7 @@ class PlgSystemMVCOverride extends JPlugin
 		);
 
 		$this->setOverrideFiles();
-	}
 
-	/**
-	 * onAfterRoute function.
-	 *
-	 * @access public
-	 * @return void
-	 */
-	public function onAfterRoute()
-	{
 		$option = $this->getOption();
 
 		if ($option === false || !isset(self::$componentList[$option]))
