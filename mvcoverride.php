@@ -222,11 +222,10 @@ class PlgSystemMVCOverride extends JPlugin
 
 		if ($type == 'helpers')
 		{
-			$app = JFactory::getApplication();
 			$baseName = basename($filePath);
 			$prefix = substr($baseName, 0, 5);
 
-			if (($app->isAdmin() && $prefix == 'admin') || (!$app->isAdmin() && $prefix != 'admin') || !(!$app->isAdmin() && $prefix == 'admin'))
+			if ($prefix != 'admin')
 			{
 				$realPath = JPATH_SITE . '/components' . substr($filePath, strlen($includePath));
 			}
