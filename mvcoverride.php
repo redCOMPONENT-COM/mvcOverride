@@ -89,9 +89,16 @@ class PlgSystemMVCOverride extends JPlugin
 
 		if ($option === false || !isset(self::$componentList[$option]))
 		{
-			return;
-		}
+			MVCOverrideHelperCodepool::initialize(array('module'));
 
+			// Add override paths for modules
+			foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
+			{
+				JModuleHelper::addIncludePath($codePool . '/modules');
+			}
+		}
+		else
+		{
 		MVCOverrideHelperCodepool::initialize();
 
 		// Add override paths for the current component files
@@ -112,6 +119,7 @@ class PlgSystemMVCOverride extends JPlugin
 			JTable::addIncludePath($codePool . '/' . $option . '/tables');
 			JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
 			JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+			}
 		}
 	}
 

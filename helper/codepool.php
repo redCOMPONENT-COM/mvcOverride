@@ -27,28 +27,31 @@ class MVCOverrideHelperCodepool
 	/**
 	 * Initialize override of some core classes
 	 *
+	 * @param   array  $classes  Array include classes
+	 *
 	 * @return void
 	 */
-	static public function initialize()
+	static public function initialize($classes = array())
 	{
 		$plugin_path = dirname(dirname(__FILE__));
+		$classes = (array) $classes;
 
 		if (version_compare(JVERSION, '3.0', '>='))
 		{
 			$overrideClasses = array(
-				array(
+				'form' => array(
 					'source_file' => JPATH_LIBRARIES . '/legacy/model/form.php',
 					'class_name' => 'JModelForm',
 					'jimport' => '',
 					'override_file' => $plugin_path . '/core/model/modelform.php'
 				),
-				array(
+				'view' => array(
 					'source_file' => JPATH_LIBRARIES . '/legacy/view/legacy.php',
 					'class_name' => 'JViewLegacy',
 					'jimport' => '',
 					'override_file' => $plugin_path . '/core/view/legacy.php'
 				),
-				array(
+				'module' => array(
 					'source_file' => JPATH_LIBRARIES . '/cms/module/helper.php',
 					'class_name' => 'JModuleHelper',
 					'jimport' => '',
@@ -59,19 +62,19 @@ class MVCOverrideHelperCodepool
 		else
 		{
 			$overrideClasses = array(
-				array(
+				'form' => array(
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/component/modelform.php',
 					'class_name' => 'JModelForm',
 					'jimport' => 'joomla.application.component.modelform',
 					'override_file' => $plugin_path . '/core/model/modelform.php'
 				),
-				array(
+				'view' => array(
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/component/view.php',
 					'class_name' => 'JView',
 					'jimport' => 'joomla.application.component.view',
 					'override_file' => $plugin_path . '/core/view/view.php'
 				),
-				array(
+				'module' => array(
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/module/helper.php',
 					'class_name' => 'JModuleHelper',
 					'jimport' => 'joomla.application.module.helper',
@@ -80,9 +83,20 @@ class MVCOverrideHelperCodepool
 			);
 		}
 
-		foreach ($overrideClasses as $overrideClass)
+		if (count($classes) > 0)
 		{
-			self::overrideClass($overrideClass['source_file'], $overrideClass['class_name'], $overrideClass['jimport'], $overrideClass['override_file']);
+			foreach ($classes as $class)
+			{
+				$overrideClass = $overrideClasses[$class];
+				self::overrideClass($overrideClass['source_file'], $overrideClass['class_name'], $overrideClass['jimport'], $overrideClass['override_file']);
+			}
+		}
+		else
+		{
+			foreach ($overrideClasses as $overrideClass)
+			{
+				self::overrideClass($overrideClass['source_file'], $overrideClass['class_name'], $overrideClass['jimport'], $overrideClass['override_file']);
+			}
 		}
 	}
 
