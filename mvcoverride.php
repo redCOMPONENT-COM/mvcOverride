@@ -99,26 +99,26 @@ class PlgSystemMVCOverride extends JPlugin
 		}
 		else
 		{
-		MVCOverrideHelperCodepool::initialize();
+			MVCOverrideHelperCodepool::initialize();
 
-		// Add override paths for the current component files
-		foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
-		{
-			if (version_compare(JVERSION, '3.0', '>='))
+			// Add override paths for the current component files
+			foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
 			{
-				JViewLegacy::addViewHelperPath($codePool . '/' . $option);
-				JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
-			}
-			else
-			{
-				JView::addViewHelperPath($codePool . '/' . $option);
-				JView::addViewTemplatePath($codePool . '/' . $option);
-			}
+				if (version_compare(JVERSION, '3.0', '>='))
+				{
+					JViewLegacy::addViewHelperPath($codePool . '/' . $option);
+					JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
+				}
+				else
+				{
+					JView::addViewHelperPath($codePool . '/' . $option);
+					JView::addViewTemplatePath($codePool . '/' . $option);
+				}
 
-			JModuleHelper::addIncludePath($codePool . '/modules');
-			JTable::addIncludePath($codePool . '/' . $option . '/tables');
-			JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-			JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+				JModuleHelper::addIncludePath($codePool . '/modules');
+				JTable::addIncludePath($codePool . '/' . $option . '/tables');
+				JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+				JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
 			}
 		}
 	}
