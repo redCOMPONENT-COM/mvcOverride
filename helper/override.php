@@ -91,7 +91,13 @@ abstract class MVCOverrideHelperOverride
 		$replaceClass = $prefix . $originalClass . $suffix;
 
 		// Replace original class name by default
-		$bufferContent = str_replace($originalClass, $replaceClass, $bufferFile);
+		$patterns = array(
+			'/([\s]{1,}|;{1}class[\s]*)' . $originalClass . '([\s])/i',
+			'/([\s]{1,}|={1})' . $originalClass . '([\s]?:)/i',
+			'/([\s]{1,}|new{1})' . $originalClass . '([\s]?\()/i'
+		);
+		$replacement ='$1' . $replaceClass . '$2';
+		$bufferContent = preg_replace($patterns, $replacement, $bufferFile);
 
 		return $bufferContent;
 	}
