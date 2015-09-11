@@ -92,9 +92,9 @@ abstract class MVCOverrideHelperOverride
 
 		// Replace original class name by default
 		$patterns = array(
-			'/([\s]{1,}|;{1}class[\s]*)' . $originalClass . '([\s])/i',
-			'/([\s]{1,}|={1})' . $originalClass . '([\s]?:)/i',
-			'/([\s]{1,}|new{1})' . $originalClass . '([\s]?\()/i'
+			'/([\s]{1,}|;{1}class[\s]+)' . $originalClass . '([\s]{0,})/i',
+			'/([\s]{1,}|\W)' . $originalClass . '([\s]{0,}:)/i',
+			'/(new[\s]{0,})' . $originalClass . '([\s]{0,}\()/i'
 		);
 		$replacement ='$1' . $replaceClass . '$2';
 		$bufferContent = preg_replace($patterns, $replacement, $bufferFile);
