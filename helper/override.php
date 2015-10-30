@@ -96,7 +96,7 @@ abstract class MVCOverrideHelperOverride
 			'/([\s]{1,}|\W)' . $originalClass . '([\s]{0,}:)/i',
 			'/(new[\s]{0,})' . $originalClass . '([\s]{0,}\()/i'
 		);
-		$replacement ='$1' . $replaceClass . '$2';
+		$replacement = '$1' . $replaceClass . '$2';
 		$bufferContent = preg_replace($patterns, $replacement, $bufferFile);
 
 		return $bufferContent;
