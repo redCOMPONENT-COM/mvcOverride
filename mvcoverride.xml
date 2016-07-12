@@ -11,15 +11,11 @@
 	<description>PLG_SYSTEM_MVC_OVERRIDE_DESCRIPTION</description>
 
 	<files>
-		<filename plugin="mvcoverride">mvcoverride.php</filename>
 		<folder>core</folder>
 		<folder>helper</folder>
+		<folder>language</folder>
+		<filename plugin="mvcoverride">mvcoverride.php</filename>
 	</files>
-
-	<languages folder="language">
-		<language tag="en-GB">en-GB/en-GB.plg_system_mvcoverride.ini</language>
-		<language tag="en-GB">en-GB/en-GB.plg_system_mvcoverride.sys.ini</language>
-	</languages>
 
 	<config>
 		<fields name="params">

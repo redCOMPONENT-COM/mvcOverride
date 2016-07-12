@@ -48,7 +48,16 @@ class PlgSystemMVCOverride extends JPlugin
 		JPlugin::loadLanguage('plg_system_mvcoverride');
 
 		parent::__construct($subject, $config);
+	}
 
+	/**
+	 * onAfterRoute function.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function onAfterRoute()
+	{
 		JPluginHelper::importPlugin('redcore');
 
 		$app = JFactory::getApplication();
@@ -75,43 +84,42 @@ class PlgSystemMVCOverride extends JPlugin
 		);
 
 		$this->setOverrideFiles();
-	}
 
-	/**
-	 * onAfterRoute function.
-	 *
-	 * @access public
-	 * @return void
-	 */
-	public function onAfterRoute()
-	{
 		$option = $this->getOption();
 
 		if ($option === false || !isset(self::$componentList[$option]))
 		{
-			return;
+			MVCOverrideHelperCodepool::initialize(array('module'));
+
+			// Add override paths for modules
+			foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
+			{
+				JModuleHelper::addIncludePath($codePool . '/modules');
+			}
 		}
-
-		MVCOverrideHelperCodepool::initialize();
-
-		// Add override paths for the current component files
-		foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
+		else
 		{
-			if (version_compare(JVERSION, '3.0', '>='))
-			{
-				JViewLegacy::addViewHelperPath($codePool . '/' . $option);
-				JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
-			}
-			else
-			{
-				JView::addViewHelperPath($codePool . '/' . $option);
-				JView::addViewTemplatePath($codePool . '/' . $option);
-			}
+			MVCOverrideHelperCodepool::initialize();
 
-			JModuleHelper::addIncludePath($codePool . '/modules');
-			JTable::addIncludePath($codePool . '/' . $option . '/tables');
-			JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-			JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+			// Add override paths for the current component files
+			foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
+			{
+				if (version_compare(JVERSION, '3.0', '>='))
+				{
+					JViewLegacy::addViewHelperPath($codePool . '/' . $option);
+					JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
+				}
+				else
+				{
+					JView::addViewHelperPath($codePool . '/' . $option);
+					JView::addViewTemplatePath($codePool . '/' . $option);
+				}
+
+				JModuleHelper::addIncludePath($codePool . '/modules');
+				JTable::addIncludePath($codePool . '/' . $option . '/tables');
+				JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+				JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+			}
 		}
 	}
 
@@ -222,11 +230,10 @@ class PlgSystemMVCOverride extends JPlugin
 
 		if ($type == 'helpers')
 		{
-			$app = JFactory::getApplication();
 			$baseName = basename($filePath);
 			$prefix = substr($baseName, 0, 5);
 
-			if (($app->isAdmin() && $prefix == 'admin') || (!$app->isAdmin() && $prefix != 'admin') || !(!$app->isAdmin() && $prefix == 'admin'))
+			if ($prefix != 'admin')
 			{
 				$realPath = JPATH_SITE . '/components' . substr($filePath, strlen($includePath));
 			}

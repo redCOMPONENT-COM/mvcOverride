@@ -88,10 +88,12 @@ abstract class MVCOverrideHelperOverride
 			$prefix = self::PREFIX;
 		}
 
-		$replaceClass = $prefix . $originalClass . $suffix;
-
 		// Replace original class name by default
-		$bufferContent = str_replace($originalClass, $replaceClass, $bufferFile);
+		$bufferContent = preg_replace(
+			'/(class\s{1,})(' . $originalClass . ')(\s{1,})/i',
+			'$1' . $prefix . '$2' . $suffix . '$3',
+			$bufferFile
+		);
 
 		return $bufferContent;
 	}
