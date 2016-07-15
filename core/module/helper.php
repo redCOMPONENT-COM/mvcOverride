@@ -136,6 +136,8 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 		// Revert the scope
 		$app->scope = $scope;
 
+		$app->triggerEvent('onAfterRenderModule', array(&$module, &$attribs));
+
 		if (constant('JDEBUG'))
 		{
 			JProfiler::getInstance('Application')->mark('afterRenderModule ' . $module->module . ' (' . $module->title . ')');
