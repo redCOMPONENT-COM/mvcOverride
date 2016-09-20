@@ -90,8 +90,8 @@ abstract class MVCOverrideHelperOverride
 
 		// Replace original class name by default
 		$bufferContent = preg_replace(
-			'/(class\s{1,})(' . $originalClass . ')(\s{1,})/i',
-			'$1' . $prefix . '$2' . $suffix . '$3',
+			'/(final\s{1,}|.?)(class\s{1,})(' . $originalClass . ')(\s{1,})/i',
+			' $2' . $prefix . '$3' . $suffix . '$4',
 			$bufferFile
 		);
 
