@@ -156,6 +156,7 @@ class PlgSystemMVCOverride extends JPlugin
 	private function addOverrideFiles($includePath, $component)
 	{
 		$types = array('controllers', 'models', 'helpers', 'views');
+		$currentFormat = JFactory::getDocument()->getType();
 
 		foreach ($types as $type)
 		{
@@ -189,7 +190,7 @@ class PlgSystemMVCOverride extends JPlugin
 					foreach ($views as $view)
 					{
 						// Get view formats files
-						if ($listFiles = JFolder::files($searchFolder . '/' . $view, '.php', false, true))
+						if ($listFiles = JFolder::files($searchFolder . '/' . $view, '.' . $currentFormat . '.php', false, true))
 						{
 							foreach ($listFiles as $file)
 							{
@@ -221,7 +222,7 @@ class PlgSystemMVCOverride extends JPlugin
 	 * @param   string  $type         Type file
 	 * @param   string  $indexName    Name usage for helper index
 	 *
-	 * @return stdClass
+	 * @return  void
 	 */
 	private function getOverrideFileInfo($includePath, $component, $filePath, $type = '', $indexName = '')
 	{
