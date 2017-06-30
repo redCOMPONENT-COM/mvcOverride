@@ -9,12 +9,34 @@
 
 defined('_JEXEC') or die;
 
+// Use redCORE loader if it's available since it overrides JLoader
+if (class_exists('RLoader'))
+{
+	/**
+	 * Class MiddleMVCLoader
+	 *
+	 * @since  1.4.11
+	 */
+	class MiddleMVCLoader extends RLoader
+	{}
+}
+else
+{
+	/**
+	 * Class MiddleMVCLoader
+	 *
+	 * @since  1.4.11
+	 */
+	class MiddleMVCLoader extends JLoader
+	{}
+}
+
 /**
  * Static class to handle loading of libraries.
  *
  * @since  1.4.10
  */
-class MVCLoader extends JLoader
+class MVCLoader extends MiddleMVCLoader
 {
 	/**
 	 * Flag for change values and functions to protected instead private in extends files
