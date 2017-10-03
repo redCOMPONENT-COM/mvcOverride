@@ -3,69 +3,72 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-// No direct access
-defined('_JEXEC') or die;
+namespace Joomla\CMS\MVC\Model;
+
+defined('JPATH_PLATFORM') or die;
+
+use Joomla\Utilities\ArrayHelper;
 
 /**
- * Module helper class
+ * Base class for a database aware Joomla Model
  *
- * @package     Joomla.Legacy
- * @subpackage  Module
- * @since       1.4
+ * Acts as a Factory class for application specific objects and provides many supporting API functions.
+ *
+ * @since  1.5.0
  */
-abstract class JModelForm extends LIB_JModelFormDefault
+abstract class ListModel extends LIB_ListModelDefault
 {
 	/**
 	 * Array to registry paths from component form and gields
 	 *
 	 * @var array
-	 * @since 1.4
+	 * @since  1.5.0
 	 */
 	static private $codePaths = array('form' => array(), 'fields' => array());
 
 	/**
 	 * Method to get a form object.
 	 *
-	 * @param   string   $name     The name of the form.
-	 * @param   string   $source   The form source. Can be XML string if file flag is set to false.
-	 * @param   array    $options  Optional array of options for the form creation.
-	 * @param   boolean  $clear    Optional argument to force load a new form.
-	 * @param   string   $xpath    An optional xpath to search for the fields.
+	 * @param   string          $name     The name of the form.
+	 * @param   string          $source   The form source. Can be XML string if file flag is set to false.
+	 * @param   array           $options  Optional array of options for the form creation.
+	 * @param   boolean         $clear    Optional argument to force load a new form.
+	 * @param   string|boolean  $xpath    An optional xpath to search for the fields.
 	 *
-	 * @return  mixed  JForm object on success, False on error.
+	 * @return  \JForm|boolean  \JForm object on success, False on error.
 	 *
-	 * @see     JForm
-	 * @since 1.4
+	 * @see     \JForm
+	 * @since  1.5.0
 	 */
 	protected function loadForm($name, $source = null, $options = array(), $clear = false, $xpath = false)
 	{
 		// Handle the optional arguments.
-		$options['control'] = JArrayHelper::getValue($options, 'control', false);
+		$options['control'] = ArrayHelper::getValue((array) $options, 'control', false);
 
 		// Create a signature hash.
 		$hash = md5($source . serialize($options));
 
 		// Check if we can use a previously loaded form.
-		if (isset($this->_forms[$hash]) && !$clear)
+		if (!$clear && isset($this->_forms[$hash]))
 		{
 			return $this->_forms[$hash];
 		}
 
 		// Get the form.
-		JForm::addFormPath(JPATH_COMPONENT . '/models/forms');
-		JForm::addFieldPath(JPATH_COMPONENT . '/models/fields');
+		\JForm::addFormPath(JPATH_COMPONENT . '/models/forms');
+		\JForm::addFieldPath(JPATH_COMPONENT . '/models/fields');
 
 		// Sync with codepools
-		JForm::addFormPath(self::addComponentFormPath());
-		JForm::addFieldPath(self::addComponentFieldPath());
+		\JForm::addFormPath(self::addComponentFormPath());
+		\JForm::addFieldPath(self::addComponentFieldPath());
 
 		try
 		{
-			$form = JForm::getInstance($name, $source, $options, false, $xpath);
+			$form = \JForm::getInstance($name, $source, $options, false, $xpath);
 
 			if (isset($options['load_data']) && $options['load_data'])
 			{
@@ -84,7 +87,7 @@ abstract class JModelForm extends LIB_JModelFormDefault
 			// Load the data into the form after the plugins have operated.
 			$form->bind($data);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$this->setError($e->getMessage());
 
@@ -103,7 +106,7 @@ abstract class JModelForm extends LIB_JModelFormDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return string
-	 * @since 1.4
+	 * @since  1.5.0
 	 */
 	static public function addComponentFormPath($path = null)
 	{
@@ -123,7 +126,7 @@ abstract class JModelForm extends LIB_JModelFormDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return  string
-	 * @since 1.4
+	 * @since  1.5.0
 	 */
 	static public function addComponentFieldPath($path = null)
 	{
