@@ -26,7 +26,7 @@ abstract class ModuleHelper extends LIB_ModuleHelperDefault
 	 * An array to hold included paths
 	 *
 	 * @var    array
-	 * @since  11.1
+	 * @since  1.5
 	 */
 	protected static $includePaths = array();
 
@@ -243,7 +243,7 @@ abstract class ModuleHelper extends LIB_ModuleHelperDefault
 	 *
 	 * @return  array  An array with directory elements
 	 *
-	 * @since   11.1
+	 * @since   1.5
 	 */
 	public static function addIncludePath($path = '')
 	{

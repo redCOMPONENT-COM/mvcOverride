@@ -77,22 +77,6 @@ class MVCLoader extends MiddleMVCLoader
 	protected static $overrideFiles = array();
 
 	/**
-	 * Container for already imported library paths.
-	 *
-	 * @var    array
-	 * @since  1.4.10
-	 */
-	protected static $classes = array();
-
-	/**
-	 * Container for registered library class prefixes and path lookups.
-	 *
-	 * @var    array
-	 * @since  1.4.10
-	 */
-	protected static $prefixes = array();
-
-	/**
 	 * Set in static array name class and relate data
 	 *
 	 * @param   string  $class           Name class
