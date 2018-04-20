@@ -7,23 +7,24 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-// No direct access
-defined('_JEXEC') or die;
+namespace Joomla\CMS\MVC\View;
+
+defined('JPATH_PLATFORM') or die;
 
 /**
- * View class
+ * Base class for a Joomla View
  *
- * @package     Joomla.Legacy
- * @subpackage  Module
- * @since       1.4
+ * Class holding methods for displaying presentation data.
+ *
+ * @since  1.5.0
  */
-abstract class JViewLegacy extends LIB_JViewLegacyDefault
+class HtmlView extends LIB_HtmlViewDefault
 {
 	/**
 	 * Register new paths to helpers and templates
 	 *
 	 * @var array
-	 * @since 1.4
+	 * @since 1.5.0
 	 */
 	static private $codePaths = array('helper' => array(), 'template' => array());
 
@@ -33,8 +34,7 @@ abstract class JViewLegacy extends LIB_JViewLegacyDefault
 	 * @param   string  $tpl  The name of the template source file; automatically searches the template paths and compiles as needed.
 	 *
 	 * @return  string  The output of the the template script.
-	 *
-	 * @since 1.4
+	 * @since   1.5.0
 	 */
 	public function loadTemplate($tpl = null)
 	{
@@ -55,8 +55,7 @@ abstract class JViewLegacy extends LIB_JViewLegacyDefault
 	 * @param   string  $hlp  The name of the helper source file automatically searches the helper paths and compiles as needed.
 	 *
 	 * @return  void
-	 *
-	 * @since 1.4
+	 * @since   1.5.0
 	 */
 	public function loadHelper($hlp = null)
 	{
@@ -77,7 +76,7 @@ abstract class JViewLegacy extends LIB_JViewLegacyDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return  array
-	 * @since 1.4
+	 * @since   1.5.0
 	 */
 	static public function addViewHelperPath($path = null)
 	{
@@ -97,7 +96,7 @@ abstract class JViewLegacy extends LIB_JViewLegacyDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return  array
-	 * @since 1.4
+	 * @since   1.5.0
 	 */
 	static public function addViewTemplatePath($path = null)
 	{

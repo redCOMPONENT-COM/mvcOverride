@@ -3,7 +3,7 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -18,7 +18,10 @@ if (class_exists('RLoader'))
 	 * @since  1.4.11
 	 */
 	class MiddleMVCLoader extends RLoader
-	{}
+	{
+
+
+	}
 }
 else
 {
@@ -28,7 +31,10 @@ else
 	 * @since  1.4.11
 	 */
 	class MiddleMVCLoader extends JLoader
-	{}
+	{
+
+
+	}
 }
 
 /**
@@ -41,7 +47,8 @@ class MVCLoader extends MiddleMVCLoader
 	/**
 	 * Flag for change values and functions to protected instead private in extends files
 	 *
-	 * @var int
+	 * @var integer
+	 * @since  1.4.10
 	 */
 	protected static $changePrivate = 0;
 
@@ -49,6 +56,7 @@ class MVCLoader extends MiddleMVCLoader
 	 * Prefix for extend files
 	 *
 	 * @var string
+	 * @since  1.4.10
 	 */
 	protected static $prefix = '';
 
@@ -56,6 +64,7 @@ class MVCLoader extends MiddleMVCLoader
 	 * Suffix for extend files
 	 *
 	 * @var string
+	 * @since  1.4.10
 	 */
 	protected static $suffix = 'Default';
 
@@ -63,6 +72,7 @@ class MVCLoader extends MiddleMVCLoader
 	 * Container for extend files information.
 	 *
 	 * @var    array
+	 * @since  1.4.10
 	 */
 	protected static $overrideFiles = array();
 
@@ -74,16 +84,19 @@ class MVCLoader extends MiddleMVCLoader
 	 * @param   bool    $isOverrideFile  Name class and path for override file
 	 * @param   string  $prefix          Prefix for extend files
 	 * @param   string  $suffix          Suffix for extend files
+	 * @param   string  $namespace       Namespace
 	 *
 	 * @return void
+	 * @since  1.4.10
 	 */
-	public static function setOverrideFile($class, $path, $isOverrideFile = false, $prefix = null, $suffix = null)
+	public static function setOverrideFile($class, $path, $isOverrideFile = false, $prefix = null, $suffix = null, $namespace = '')
 	{
-		$object = new stdClass;
-		$object->path = $path;
+		$object             = new stdClass;
+		$object->path       = $path;
 		$object->isOverride = $isOverrideFile;
-		$object->prefix = $prefix;
-		$object->suffix = $suffix;
+		$object->prefix     = $prefix;
+		$object->suffix     = $suffix;
+		$object->namespace  = $namespace;
 
 		if ($isOverrideFile)
 		{
@@ -91,7 +104,7 @@ class MVCLoader extends MiddleMVCLoader
 		}
 
 		// Sanitize class name.
-		$class = strtolower($class);
+		$class                       = strtolower(($namespace ? $namespace . '\\' : '') . $class);
 		self::$overrideFiles[$class] = $object;
 	}
 
@@ -103,12 +116,13 @@ class MVCLoader extends MiddleMVCLoader
 	 * @param   string  $suffix         Suffix for extend files
 	 *
 	 * @return  void
+	 * @since  1.4.10
 	 */
 	public static function setupOverrideLoader($changePrivate = 0, $prefix = '', $suffix = 'Default')
 	{
 		self::$changePrivate = $changePrivate;
-		self::$prefix = $prefix;
-		self::$suffix = $suffix;
+		self::$prefix        = $prefix;
+		self::$suffix        = $suffix;
 
 		// Register the prefix autoloader.
 		spl_autoload_register(array('MVCLoader', 'registerOverrideAutoLoader'), false, true);
@@ -119,7 +133,8 @@ class MVCLoader extends MiddleMVCLoader
 	 *
 	 * @param   string  $class  Name class search
 	 *
-	 * @return bool
+	 * @return boolean
+	 * @since  1.4.10
 	 */
 	public static function registerOverrideAutoLoader($class)
 	{
@@ -182,6 +197,7 @@ class MVCLoader extends MiddleMVCLoader
 	 * @param   string  $prefix  Prefix part extension
 	 *
 	 * @return  boolean  True if the class was loaded, false otherwise.
+	 * @since  1.4.10
 	 */
 	private static function loadClass($class, $lookup, $prefix)
 	{
@@ -215,13 +231,15 @@ class MVCLoader extends MiddleMVCLoader
 	 * @param   string  $oldPath  Real file path
 	 * @param   string  $class    Name class
 	 *
-	 * @return bool|mixed
+	 * @return boolean|mixed
+	 * @since  1.4.10
 	 */
 	protected static function checkOverride($oldPath, $class)
 	{
-		$newPath = substr($oldPath, strlen(JPATH_SITE) + 1);
+		$newPath  = substr($oldPath, strlen(JPATH_SITE) + 1);
+		$filePath = JPath::find(MVCOverrideHelperCodepool::addCodePath(null, true), $newPath);
 
-		if ($filePath = JPath::find(MVCOverrideHelperCodepool::addCodePath(null, true), $newPath))
+		if ($filePath)
 		{
 			self::setOverrideFile($class, $oldPath, true, self::$prefix, self::$suffix);
 
@@ -238,7 +256,8 @@ class MVCLoader extends MiddleMVCLoader
 	 * @param   string  $prefix   Prefix for extend files
 	 * @param   string  $suffix   Suffix for extend files
 	 *
-	 * @return bool
+	 * @return boolean
+	 * @since  1.4.10
 	 */
 	protected static function loadOverrideFile($oldPath, $prefix, $suffix)
 	{

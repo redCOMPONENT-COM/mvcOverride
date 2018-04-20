@@ -3,7 +3,7 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -14,7 +14,7 @@ defined('_JEXEC') or die;
  *
  * @package     Joomla.Legacy
  * @subpackage  Module
- * @since       11.1
+ * @since       1.4
  */
 abstract class JModuleHelper extends LIB_JModuleHelperDefault
 {
@@ -22,10 +22,14 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 	 * An array to hold included paths
 	 *
 	 * @var    array
-	 * @since  11.1
+	 * @since  1.4
 	 */
 	protected static $includePaths = array();
 
+	/**
+	 * @var boolean
+	 * @since 1.4
+	 */
 	public static $chrome = false;
 
 	/**
@@ -36,7 +40,7 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 	 *
 	 * @return  string  The HTML content of the module output.
 	 *
-	 * @since   11.1
+	 * @since 1.4
 	 */
 	public static function renderModule($module, $attribs = array())
 	{
@@ -154,19 +158,19 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 	 *
 	 * @return  string  The path to the module layout
 	 *
-	 * @since   11.1
+	 * @since 1.4
 	 */
 	public static function getLayoutPath($module, $layout = 'default')
 	{
-		$template = JFactory::getApplication()->getTemplate();
+		$template      = JFactory::getApplication()->getTemplate();
 		$defaultLayout = $layout;
 
 		if (strpos($layout, ':') !== false)
 		{
 			// Get the template and file name from the string
-			$temp = explode(':', $layout);
-			$template = ($temp[0] == '_') ? $template : $temp[0];
-			$layout = $temp[1];
+			$temp          = explode(':', $layout);
+			$template      = ($temp[0] == '_') ? $template : $temp[0];
+			$layout        = $temp[1];
 			$defaultLayout = ($temp[1]) ? $temp[1] : 'default';
 		}
 
@@ -199,7 +203,7 @@ abstract class JModuleHelper extends LIB_JModuleHelperDefault
 	 *
 	 * @return  array  An array with directory elements
 	 *
-	 * @since   11.1
+	 * @since 1.4
 	 */
 	public static function addIncludePath($path = '')
 	{

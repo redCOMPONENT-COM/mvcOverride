@@ -3,7 +3,7 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -23,6 +23,7 @@ abstract class MVCOverrideHelperOverride
 	 * Default suffix of class overrides
 	 *
 	 * @var string
+	 * @since  1.4
 	 */
 	const SUFFIX = 'Default';
 
@@ -30,6 +31,7 @@ abstract class MVCOverrideHelperOverride
 	 * Default pre-suffix of class overrides
 	 *
 	 * @var string
+	 * @since  1.4
 	 */
 	const PREFIX = '';
 
@@ -39,11 +41,12 @@ abstract class MVCOverrideHelperOverride
 	 * @param   string  $bufferContent  Buffer Content
 	 *
 	 * @return null|string
+	 * @since  1.4
 	 */
 	static public function getOriginalClass($bufferContent)
 	{
 		$originalClass = null;
-		$tokens = token_get_all($bufferContent);
+		$tokens        = token_get_all($bufferContent);
 
 		foreach ($tokens as $key => $token)
 		{
@@ -70,6 +73,7 @@ abstract class MVCOverrideHelperOverride
 	 * @param   string  $suffix         Suffix
 	 *
 	 * @return  string
+	 * @since  1.4
 	 */
 	static public function createDefaultClass($componentFile, $prefix = null, $suffix = null)
 	{
@@ -104,6 +108,7 @@ abstract class MVCOverrideHelperOverride
 	 * @param   string  $bufferContent  Buffer Content
 	 *
 	 * @return  void
+	 * @since  1.4
 	 */
 	static public function load($bufferContent)
 	{

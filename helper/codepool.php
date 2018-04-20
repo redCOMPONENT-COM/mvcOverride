@@ -3,7 +3,7 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -21,6 +21,7 @@ class MVCOverrideHelperCodepool
 	 * Register global paths to override code
 	 *
 	 * @var array
+	 * @since  1.4
 	 */
 	private static $paths = array();
 
@@ -30,32 +31,59 @@ class MVCOverrideHelperCodepool
 	 * @param   array  $classes  Array include classes
 	 *
 	 * @return void
+	 * @since  1.4
 	 */
-	static public function initialize($classes = array())
+	static public function initialize($classes = array('form', 'form_list', 'view', 'module'))
 	{
-		$plugin_path = dirname(dirname(__FILE__));
-		$classes = (array) $classes;
+		$pluginPath = dirname(dirname(__FILE__));
+		$classes    = (array) $classes;
 
-		if (version_compare(JVERSION, '3.0', '>='))
+		if (version_compare(JVERSION, '3.8.0', '>='))
+		{
+			$overrideClasses = array(
+				'form' => array(
+					'source_file' => JPATH_LIBRARIES . '/src/MVC/Model/FormModel.php',
+					'class_name' => 'FormModel',
+					'namespace' => 'Joomla\CMS\MVC\Model',
+					'override_file' => $pluginPath . '/core/src/MVC/Model/FormModel.php'
+				),
+				'form_list' => array(
+					'source_file' => JPATH_LIBRARIES . '/src/MVC/Model/ListModel.php',
+					'class_name' => 'ListModel',
+					'namespace' => 'Joomla\CMS\MVC\Model',
+					'override_file' => $pluginPath . '/core/src/MVC/Model/ListModel.php'
+				),
+				'view' => array(
+					'source_file' => JPATH_LIBRARIES . '/src/MVC/View/HtmlView.php',
+					'class_name' => 'HtmlView',
+					'namespace' => 'Joomla\CMS\MVC\View',
+					'override_file' => $pluginPath . '/core/src/MVC/View/HtmlView.php'
+				),
+				'module' => array(
+					'source_file' => JPATH_LIBRARIES . '/src/Helper/ModuleHelper.php',
+					'class_name' => 'ModuleHelper',
+					'namespace' => 'Joomla\CMS\Helper',
+					'override_file' => $pluginPath . '/core/src/Helper/ModuleHelper.php'
+				)
+			);
+		}
+		elseif (version_compare(JVERSION, '3.0', '>='))
 		{
 			$overrideClasses = array(
 				'form' => array(
 					'source_file' => JPATH_LIBRARIES . '/legacy/model/form.php',
 					'class_name' => 'JModelForm',
-					'jimport' => '',
-					'override_file' => $plugin_path . '/core/model/modelform.php'
+					'override_file' => $pluginPath . '/core/model/modelform.php'
 				),
 				'view' => array(
 					'source_file' => JPATH_LIBRARIES . '/legacy/view/legacy.php',
 					'class_name' => 'JViewLegacy',
-					'jimport' => '',
-					'override_file' => $plugin_path . '/core/view/legacy.php'
+					'override_file' => $pluginPath . '/core/view/legacy.php'
 				),
 				'module' => array(
 					'source_file' => JPATH_LIBRARIES . '/cms/module/helper.php',
 					'class_name' => 'JModuleHelper',
-					'jimport' => '',
-					'override_file' => $plugin_path . '/core/module/helper.php'
+					'override_file' => $pluginPath . '/core/module/helper.php'
 				)
 			);
 		}
@@ -66,36 +94,35 @@ class MVCOverrideHelperCodepool
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/component/modelform.php',
 					'class_name' => 'JModelForm',
 					'jimport' => 'joomla.application.component.modelform',
-					'override_file' => $plugin_path . '/core/model/modelform.php'
+					'override_file' => $pluginPath . '/core/model/modelform.php'
 				),
 				'view' => array(
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/component/view.php',
 					'class_name' => 'JView',
 					'jimport' => 'joomla.application.component.view',
-					'override_file' => $plugin_path . '/core/view/view.php'
+					'override_file' => $pluginPath . '/core/view/view.php'
 				),
 				'module' => array(
 					'source_file' => JPATH_LIBRARIES . '/joomla/application/module/helper.php',
 					'class_name' => 'JModuleHelper',
 					'jimport' => 'joomla.application.module.helper',
-					'override_file' => $plugin_path . '/core/module/helper.php'
+					'override_file' => $pluginPath . '/core/module/helper.php'
 				)
 			);
 		}
 
-		if (count($classes) > 0)
+		foreach ($classes as $class)
 		{
-			foreach ($classes as $class)
+			if (array_key_exists($class, $overrideClasses))
 			{
 				$overrideClass = $overrideClasses[$class];
-				self::overrideClass($overrideClass['source_file'], $overrideClass['class_name'], $overrideClass['jimport'], $overrideClass['override_file']);
-			}
-		}
-		else
-		{
-			foreach ($overrideClasses as $overrideClass)
-			{
-				self::overrideClass($overrideClass['source_file'], $overrideClass['class_name'], $overrideClass['jimport'], $overrideClass['override_file']);
+				self::overrideClass(
+					$overrideClass['source_file'],
+					$overrideClass['class_name'],
+					array_key_exists('jimport', $overrideClass) ? $overrideClass['jimport'] : '',
+					$overrideClass['override_file'],
+					array_key_exists('namespace', $overrideClass) ? $overrideClass['namespace'] : ''
+				);
 			}
 		}
 	}
@@ -107,10 +134,12 @@ class MVCOverrideHelperCodepool
 	 * @param   string  $class        Class
 	 * @param   string  $jimport      JImport path
 	 * @param   string  $replacePath  Replace Path
+	 * @param   string  $namespace    Namespace
 	 *
 	 * @return void
+	 * @since  1.4
 	 */
-	static private function overrideClass($sourcePath, $class, $jimport, $replacePath)
+	static private function overrideClass($sourcePath, $class, $jimport, $replacePath, $namespace = '')
 	{
 		// Override library class
 		if (!file_exists($sourcePath))
@@ -118,14 +147,14 @@ class MVCOverrideHelperCodepool
 			return;
 		}
 
-		MVCLoader::setOverrideFile($class, $sourcePath, true, 'LIB_', 'Default');
+		MVCLoader::setOverrideFile($class, $sourcePath, true, 'LIB_', 'Default', $namespace);
 
 		if (!empty($jimport))
 		{
 			jimport($jimport);
 		}
 
-		MVCLoader::setOverrideFile($class, $replacePath);
+		MVCLoader::setOverrideFile($class, $replacePath, false, null, null, $namespace);
 	}
 
 	/**
@@ -135,6 +164,7 @@ class MVCOverrideHelperCodepool
 	 * @param   bool    $reverse  If true - return reverse array
 	 *
 	 * @return array
+	 * @since  1.4
 	 */
 	static public function addCodePath($path = null, $reverse = false)
 	{

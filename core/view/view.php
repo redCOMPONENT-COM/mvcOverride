@@ -3,7 +3,7 @@
  * @package     RedCORE.Plugin
  * @subpackage  System.MVCOverride
  *
- * @copyright   Copyright (C) 2008 - 2015 redCOMPONENT.com. All rights reserved.
+ * @copyright   Copyright (C) 2008 - 2017 redCOMPONENT.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -15,7 +15,7 @@ defined('_JEXEC') or die;
  *
  * @package     Joomla.Legacy
  * @subpackage  Module
- * @since       11.1
+ * @since       1.4
  */
 abstract class JView extends LIB_JViewDefault
 {
@@ -23,6 +23,7 @@ abstract class JView extends LIB_JViewDefault
 	 * Register new paths to helpers and templates
 	 *
 	 * @var array
+	 * @since 1.4
 	 */
 	static private $codePaths = array('helper' => array(), 'template' => array());
 
@@ -33,7 +34,7 @@ abstract class JView extends LIB_JViewDefault
 	 *
 	 * @return  string  The output of the the template script.
 	 *
-	 * @since   11.1
+	 * @since 1.4
 	 */
 	public function loadTemplate($tpl = null)
 	{
@@ -53,9 +54,9 @@ abstract class JView extends LIB_JViewDefault
 	 *
 	 * @param   string  $hlp  The name of the helper source file automatically searches the helper paths and compiles as needed.
 	 *
-	 * @return  void
+	 * @return  string
 	 *
-	 * @since   11.1
+	 * @since 1.4
 	 */
 	public function loadHelper($hlp = null)
 	{
@@ -76,6 +77,7 @@ abstract class JView extends LIB_JViewDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return array
+	 * @since 1.4
 	 */
 	static public function addViewHelperPath($path = null)
 	{
@@ -95,6 +97,7 @@ abstract class JView extends LIB_JViewDefault
 	 * @param   string  $path  Path
 	 *
 	 * @return  array
+	 * @since 1.4
 	 */
 	static public function addViewTemplatePath($path = null)
 	{
