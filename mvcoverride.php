@@ -34,18 +34,6 @@ class PlgSystemMVCOverride extends JPlugin
 
 	/**
 	 * @var array
-	 * @since  1.4
-	 */
-	protected static $componentList = array();
-
-	/**
-	 * @var string
-	 * @since  1.4
-	 */
-	protected static $option;
-
-	/**
-	 * @var array
 	 * @since 1.6
 	 */
 	protected $pathwaysFromTemplate = [];
@@ -65,13 +53,16 @@ class PlgSystemMVCOverride extends JPlugin
 
 		parent::__construct($subject, $config);
 
-		$redcoreLoader = JPATH_LIBRARIES . '/redcore/bootstrap.php';
-
-		// Try to support redCORE RLoader if exist
-		if (file_exists($redcoreLoader))
+		if (JPluginHelper::isEnabled('system', 'redcore'))
 		{
-			require_once $redcoreLoader;
-			RBootstrap::bootstrap(false);
+			$redcoreLoader = JPATH_LIBRARIES . '/redcore/bootstrap.php';
+
+			// Try to support redCORE RLoader if exist
+			if (file_exists($redcoreLoader))
+			{
+				require_once $redcoreLoader;
+				RBootstrap::bootstrap(false);
+			}
 		}
 
 		MVCLoader::setupOverrideLoader(
