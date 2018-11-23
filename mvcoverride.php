@@ -34,15 +34,9 @@ class PlgSystemMVCOverride extends JPlugin
 
 	/**
 	 * @var array
-	 * @since  1.4
+	 * @since 1.6
 	 */
-	protected static $componentList = array();
-
-	/**
-	 * @var string
-	 * @since  1.4
-	 */
-	protected static $option;
+	protected $pathwaysFromTemplate = [];
 
 	/**
 	 * Constructor
@@ -58,6 +52,139 @@ class PlgSystemMVCOverride extends JPlugin
 		JPlugin::loadLanguage('plg_system_mvcoverride');
 
 		parent::__construct($subject, $config);
+
+		if (JPluginHelper::isEnabled('system', 'redcore'))
+		{
+			$redcoreLoader = JPATH_LIBRARIES . '/redcore/bootstrap.php';
+
+			// Try to support redCORE RLoader if exist
+			if (file_exists($redcoreLoader))
+			{
+				require_once $redcoreLoader;
+				RBootstrap::bootstrap(false);
+			}
+		}
+
+		MVCLoader::setupOverrideLoader(
+			$this->params->get('changePrivate', 0),
+			$this->params->get('extendPrefix', ''),
+			$this->params->get('extendSuffix', 'Default')
+		);
+		MVCOverrideHelperCodepool::initialize();
+
+		$includedPathways = $this->params->get('includePath', '{JPATH_BASE}/code,{JPATH_THEMES}/{template}/code');
+
+		$includedPathways = str_replace(
+			['{JPATH_BASE}', '{JPATH_THEMES}'],
+			[JPATH_BASE, JPATH_THEMES],
+			$includedPathways
+		);
+
+		$includedPathways = explode(',', $includedPathways);
+
+		foreach ($includedPathways as $key => $includedPatch)
+		{
+			if (strpos($includedPatch, '{template}') !== false)
+			{
+				// We will attach it in onAfterRoute
+				$this->pathwaysFromTemplate[] = $includedPatch;
+				unset($includedPathways[$key]);
+			}
+		}
+
+		$this->initialiseComponents($includedPathways);
+	}
+
+	/**
+	 * @param   array|string  $includedPathways  Included pathways
+	 *
+	 * @since 1.6.0
+	 * @return  void
+	 */
+	protected function initialiseComponents($includedPathways)
+	{
+		if (empty($includedPathways))
+		{
+			return;
+		}
+
+		// Add override paths for the current component files
+		foreach ((array) $includedPathways as $codePool)
+		{
+			if (!JFolder::exists($codePool))
+			{
+				continue;
+			}
+
+			MVCOverrideHelperCodepool::addCodePath($codePool);
+
+			$components = JFolder::folders($codePool);
+
+			if (!empty($components))
+			{
+				foreach ($components as $key => $component)
+				{
+					if (strpos($component, 'com_') !== 0)
+					{
+						unset($components[$key]);
+						continue;
+					}
+
+					$this->addOverrideFiles($codePool, $component);
+				}
+			}
+
+			if (version_compare(JVERSION, '3.8', '>='))
+			{
+				if (!empty($components))
+				{
+					foreach ($components as $option)
+					{
+						Joomla\CMS\MVC\View\HtmlView::addViewHelperPath($codePool . '/' . $option);
+						Joomla\CMS\MVC\View\HtmlView::addViewTemplatePath($codePool . '/' . $option);
+						Joomla\CMS\Table\Table::addIncludePath($codePool . '/' . $option . '/tables');
+						Joomla\CMS\MVC\Model\FormModel::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+						Joomla\CMS\MVC\Model\FormModel::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+						Joomla\CMS\MVC\Model\ListModel::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+						Joomla\CMS\MVC\Model\ListModel::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+					}
+				}
+
+				Joomla\CMS\Helper\ModuleHelper::addIncludePath($codePool . '/modules');
+			}
+			elseif (version_compare(JVERSION, '3.0', '>='))
+			{
+				if (!empty($components))
+				{
+					foreach ($components as $option)
+					{
+						JViewLegacy::addViewHelperPath($codePool . '/' . $option);
+						JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
+						JTable::addIncludePath($codePool . '/' . $option . '/tables');
+						JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+						JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+					}
+				}
+
+				JModuleHelper::addIncludePath($codePool . '/modules');
+			}
+			else
+			{
+				if (!empty($components))
+				{
+					foreach ($components as $option)
+					{
+						JView::addViewHelperPath($codePool . '/' . $option);
+						JView::addViewTemplatePath($codePool . '/' . $option);
+						JTable::addIncludePath($codePool . '/' . $option . '/tables');
+						JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
+						JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
+					}
+				}
+
+				JModuleHelper::addIncludePath($codePool . '/modules');
+			}
+		}
 	}
 
 	/**
@@ -65,113 +192,28 @@ class PlgSystemMVCOverride extends JPlugin
 	 *
 	 * @return void
 	 * @since  1.4
+	 * @throws Exception
 	 */
 	public function onAfterRoute()
 	{
-		JPluginHelper::importPlugin('redcore');
-
 		$app = JFactory::getApplication();
 
-		$includePath = $this->params->get('includePath', '{JPATH_BASE}/code,{JPATH_THEMES}/{template}/code');
-
-		$includePath = str_replace(
-			array('{JPATH_BASE}', '{JPATH_THEMES}', '{template}'),
-			array(JPATH_BASE, JPATH_THEMES, $app->getTemplate()),
-			$includePath
-		);
-
-		$includePath = explode(',', $includePath);
+		if (!empty($this->pathwaysFromTemplate))
+		{
+			foreach ($this->pathwaysFromTemplate as &$pathwayFromTemplate)
+			{
+				$pathwayFromTemplate = str_replace(
+					array('{template}'),
+					array($app->getTemplate()),
+					$pathwayFromTemplate
+				);
+			}
+		}
 
 		// Register additional include paths for code replacements from plugins
-		$app->triggerEvent('onMVCOverrideIncludePaths', array(&$includePath));
+		$app->triggerEvent('onMVCOverrideIncludePaths', array(&$this->pathwaysFromTemplate));
 
-		MVCOverrideHelperCodepool::addCodePath($includePath);
-
-		MVCLoader::setupOverrideLoader(
-			$this->params->get('changePrivate', 0),
-			$this->params->get('extendPrefix', ''),
-			$this->params->get('extendSuffix', 'Default')
-		);
-
-		$this->setOverrideFiles();
-		$option    = $this->getOption();
-		$hasOption = true;
-
-		if ($option === false || !isset(self::$componentList[$option]))
-		{
-			$hasOption = false;
-		}
-
-		MVCOverrideHelperCodepool::initialize();
-
-		// Add override paths for the current component files
-		foreach (MVCOverrideHelperCodepool::addCodePath() as $codePool)
-		{
-			if (version_compare(JVERSION, '3.8', '>='))
-			{
-				if ($hasOption)
-				{
-					Joomla\CMS\MVC\View\HtmlView::addViewHelperPath($codePool . '/' . $option);
-					Joomla\CMS\MVC\View\HtmlView::addViewTemplatePath($codePool . '/' . $option);
-					Joomla\CMS\Table\Table::addIncludePath($codePool . '/' . $option . '/tables');
-					Joomla\CMS\MVC\Model\FormModel::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-					Joomla\CMS\MVC\Model\FormModel::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
-					Joomla\CMS\MVC\Model\ListModel::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-					Joomla\CMS\MVC\Model\ListModel::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
-				}
-
-				Joomla\CMS\Helper\ModuleHelper::addIncludePath($codePool . '/modules');
-			}
-			elseif (version_compare(JVERSION, '3.0', '>='))
-			{
-				if ($hasOption)
-				{
-					JViewLegacy::addViewHelperPath($codePool . '/' . $option);
-					JViewLegacy::addViewTemplatePath($codePool . '/' . $option);
-					JTable::addIncludePath($codePool . '/' . $option . '/tables');
-					JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-					JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
-				}
-
-				JModuleHelper::addIncludePath($codePool . '/modules');
-			}
-			else
-			{
-				if ($hasOption)
-				{
-					JView::addViewHelperPath($codePool . '/' . $option);
-					JView::addViewTemplatePath($codePool . '/' . $option);
-					JTable::addIncludePath($codePool . '/' . $option . '/tables');
-					JModelForm::addComponentFormPath($codePool . '/' . $option . '/models/forms');
-					JModelForm::addComponentFieldPath($codePool . '/' . $option . '/models/fields');
-				}
-
-				JModuleHelper::addIncludePath($codePool . '/modules');
-			}
-		}
-	}
-
-	/**
-	 * Set Override Files
-	 *
-	 * @return  void
-	 * @since  1.4
-	 */
-	public function setOverrideFiles()
-	{
-		$includePaths = MVCOverrideHelperCodepool::addCodePath(null);
-
-		foreach ($includePaths as $includePath)
-		{
-			if ($components = JFolder::folders($includePath))
-			{
-				foreach ($components as $component)
-				{
-					self::$componentList[$component] = $component;
-					$this->addOverrideFiles($includePath, $component);
-				}
-			}
-		}
+		$this->initialiseComponents($this->pathwaysFromTemplate);
 	}
 
 	/**
@@ -183,7 +225,7 @@ class PlgSystemMVCOverride extends JPlugin
 	 * @return void
 	 * @since  1.4
 	 */
-	private function addOverrideFiles($includePath, $component)
+	protected function addOverrideFiles($includePath, $component)
 	{
 		$types         = array('controllers', 'models', 'helpers', 'views');
 		$currentFormat = JFactory::getDocument()->getType();
@@ -202,7 +244,9 @@ class PlgSystemMVCOverride extends JPlugin
 			switch ($type)
 			{
 				case 'helpers':
-					if ($listFiles = JFolder::files($searchFolder, '.php', false, true))
+					$listFiles = JFolder::files($searchFolder, '.php', false, true);
+
+					if (!empty($listFiles))
 					{
 						foreach ($listFiles as $file)
 						{
@@ -215,12 +259,16 @@ class PlgSystemMVCOverride extends JPlugin
 
 				case 'views':
 					// Reading view folders
-					if ($views = JFolder::folders($searchFolder))
+					$views = JFolder::folders($searchFolder);
+
+					if (!empty($views))
 					{
 						foreach ($views as $view)
 						{
 							// Get view formats files
-							if ($listFiles = JFolder::files($searchFolder . '/' . $view, '.' . $currentFormat . '.php', false, true))
+							$listFiles = JFolder::files($searchFolder . '/' . $view, '.' . $currentFormat . '.php', false, true);
+
+							if (!empty($listFiles))
 							{
 								foreach ($listFiles as $file)
 								{
@@ -232,7 +280,9 @@ class PlgSystemMVCOverride extends JPlugin
 					break;
 
 				default:
-					if ($listFiles = JFolder::files($searchFolder, '.php', false, true))
+					$listFiles = JFolder::files($searchFolder, '.php', false, true);
+
+					if (!empty($listFiles))
 					{
 						foreach ($listFiles as $file)
 						{
@@ -255,7 +305,7 @@ class PlgSystemMVCOverride extends JPlugin
 	 * @return  void
 	 * @since  1.4
 	 */
-	private function getOverrideFileInfo($includePath, $component, $filePath, $type = '', $indexName = '')
+	protected function getOverrideFileInfo($includePath, $component, $filePath, $type = '', $indexName = '')
 	{
 		$filePath         = JPath::clean($filePath);
 		$sameFolderPrefix = $component . '/' . $type;
@@ -308,43 +358,5 @@ class PlgSystemMVCOverride extends JPlugin
 			$this->params->get('extendPrefix', ''),
 			$this->params->get('extendSuffix', 'Default')
 		);
-	}
-
-	/**
-	 * Get option
-	 *
-	 * @return boolean|mixed|string
-	 * @since  1.4
-	 */
-	private function getOption()
-	{
-		if (self::$option)
-		{
-			return self::$option;
-		}
-
-		$app          = JFactory::getApplication();
-		self::$option = $app->input->getCmd('option', '');
-
-		if (empty(self::$option) && $app->isSite())
-		{
-			$menuDefault = JFactory::getApplication()->getMenu()->getDefault();
-
-			if (!$menuDefault)
-			{
-				return false;
-			}
-
-			$componentID = $menuDefault->component_id;
-			$db          = JFactory::getDBO();
-			$query       = $db->getQuery(true)
-				->select('element')
-				->from($db->qn('#__extensions'))
-				->where('extension_id = ' . $db->quote($componentID));
-			$db->setQuery($query);
-			self::$option = $db->loadResult();
-		}
-
-		return self::$option;
 	}
 }
